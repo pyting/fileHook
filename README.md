@@ -1,1 +1,1 @@
-logrus Hook
+"local file system hook for logrus
