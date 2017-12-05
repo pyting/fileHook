@@ -19,7 +19,7 @@ func main() {
         panic(err)
     }
     fhook.Suffix = ".log"
-    fhook.Size = 5 * 1024 * 1024
+    fhook.MaxSize = 5 * 1024 * 1024
     logrus.SetLevel(logrus.InfoLevel)
     logrus.AddHook(fhook)
     

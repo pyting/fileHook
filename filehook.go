@@ -34,7 +34,7 @@ type FileHook struct {
 	Suffix            string // 文件名后缀
 	Formatter         logrus.Formatter
 	writer            *os.File
-	Size              int64 // 文件大小限制
+	MaxSize           int64 // 文件大小限制
 }
 
 func NewFileHook(path string, dirNameCycle, fileNameCycle FileCycle) (fileHook *FileHook, err error) {
@@ -132,7 +132,7 @@ func (h *FileHook) Fire(entry *logrus.Entry) error {
 			return err
 		}
 		size := fin.Size()
-		if h.Size != 0 && h.Size <= size {
+		if h.MaxSize != 0 && h.MaxSize <= size {
 			h.writer.Close()
 			h.writer, err = os.OpenFile(path + pathSeparator + h.Prefix+
 				time.Now().Format("20060102150405")+ h.Suffix,
