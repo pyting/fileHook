@@ -8,12 +8,13 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"errors"
 )
 
 type FileCycle int
 
 const (
-	YEAR FileCycle = 4 + iota*2
+	YEAR   FileCycle = 4 + iota*2
 	MONTH
 	DAY
 	HOUR
@@ -35,6 +36,10 @@ type FileHook struct {
 }
 
 func NewFileHook(path string, dirNameCycle, fileNameCycle FileCycle) (fileHook *FileHook, err error) {
+	if dirNameCycle >= fileNameCycle {
+		err = errors.New("dirNameCycle must less fileNameCycle.")
+		return
+	}
 	format := []rune("20060102150405")
 	path = strings.TrimSuffix(path, string(os.PathSeparator))
 
