@@ -34,6 +34,7 @@ type FileHook struct {
 	Suffix            string // 文件名后缀
 	Formatter         logrus.Formatter
 	writer            *os.File
+	Size              int64 // 文件大小限制
 }
 
 func NewFileHook(path string, dirNameCycle, fileNameCycle FileCycle) (fileHook *FileHook, err error) {
@@ -100,7 +101,8 @@ func (h *FileHook) CloseConsole() error {
 func (h *FileHook) Fire(entry *logrus.Entry) error {
 	pathSeparator := string(os.PathSeparator)
 	path := h.path + pathSeparator + time.Now().Format(h.dirNameFormatter)
-	filename := h.Prefix + time.Now().Format(h.fileNameFormatter) + h.Suffix
+	filename := time.Now().Format(h.fileNameFormatter)
+
 	// 当目录发生变化时才创建目录
 	if path != h.tmppath {
 		os.MkdirAll(path, 0755)
@@ -117,12 +119,30 @@ func (h *FileHook) Fire(entry *logrus.Entry) error {
 	// 当文件名发生变化时才重新打开文件
 	if filename != h.tmpfile {
 		h.writer.Close()
-		h.writer, err = os.OpenFile(path+pathSeparator+filename, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+		h.writer, err = os.OpenFile(path+pathSeparator+h.Prefix+time.Now().Format("20060102150405")+h.Suffix,
+			os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to open file, %v", err)
 			return err
 		}
 		h.tmpfile = filename
+	} else {
+		fin, err := h.writer.Stat()
+		if err != nil {
+			return err
+		}
+		size := fin.Size()
+		if h.Size != 0 && h.Size <= size {
+			h.writer.Close()
+			h.writer, err = os.OpenFile(path + pathSeparator + h.Prefix+
+				time.Now().Format("20060102150405")+ h.Suffix,
+				os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Unable to open file, %v", err)
+				return err
+			}
+			h.tmpfile = filename
+		}
 	}
 
 	_, err = h.writer.Write(line)

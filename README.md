@@ -1,7 +1,8 @@
 # local file system hook for [logrus](https://github.com/sirupsen/logrus)
 
-1. 二级目录按时间生成，日志文件按时间生成
-2. 日志文件按大小分割
+1. 二级目录按时间分割
+2. 日志文件按时间分割
+3. 日志文件按大小分割
 
 ```go
 package main
@@ -18,6 +19,7 @@ func main() {
         panic(err)
     }
     fhook.Suffix = ".log"
+    fhook.Size = 5 * 1024 * 1024
     logrus.SetLevel(logrus.InfoLevel)
     logrus.AddHook(fhook)
     
