@@ -3,12 +3,13 @@ package filehook
 import (
 	"fmt"
 	"os"
-	"strings"
 	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
 	"errors"
+	"path/filepath"
+	"syscall"
 )
 
 type FileCycle int
@@ -41,15 +42,41 @@ func NewFileHook(path string, dirNameCycle, fileNameCycle FileCycle) (fileHook *
 		return
 	}
 	format := []rune("20060102150405")
-	path = strings.TrimSuffix(path, string(os.PathSeparator))
-
-	dirname := time.Now().Format(string(format[0:dirNameCycle]))
-	err = os.MkdirAll(path+string(os.PathSeparator)+dirname, 0755)
+	path = filepath.Clean(path)
+	var fin os.FileInfo
+	fin, err = os.Stat(path)
 	if err != nil {
 		return
 	}
-	err = os.RemoveAll(path + string(os.PathSeparator) + dirname)
-	if err != nil {
+	sys_stat, ok := fin.Sys().(*syscall.Stat_t)
+	if !ok {
+		err = errors.New("*syscall.Stat_t reflect failed")
+		return
+	}
+
+	// isowner,isgrouper,isother
+	var permIsWRX bool
+	if os.Getuid() == int(sys_stat.Uid) {
+		// owner 查看高三位
+		//fmt.Println("is owner")
+		if sys_stat.Mode&0700 == 0700 {
+			permIsWRX = true
+		}
+	} else if os.Getgid() == int(sys_stat.Gid) {
+		// grouper 查看中三位
+		//fmt.Println("is grouper")
+		if sys_stat.Mode&0070 == 0070 {
+			permIsWRX = true
+		}
+	} else {
+		// other 查看低三位
+		//fmt.Println("is other")
+		if sys_stat.Mode&0007 == 0007 {
+			permIsWRX = true
+		}
+	}
+	if !permIsWRX {
+		err = errors.New(path + " Permission denied")
 		return
 	}
 	fileHook = &FileHook{
