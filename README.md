@@ -20,6 +20,8 @@ func main() {
     }
     fhook.Suffix = ".log"
     fhook.MaxSize = 5 * 1024 * 1024
+    fhook.Level = logrus.WarnLevel
+    //fhook.CloseConsole()
     logrus.SetLevel(logrus.InfoLevel)
     logrus.AddHook(fhook)
     
