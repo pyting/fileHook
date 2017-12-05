@@ -15,8 +15,9 @@ func main() {
 	}
 	fileHook.MaxSize = 5 * 1024 * 1024
 	fileHook.Suffix = ".log"
-	fileHook.CloseConsole()
-	logrus.SetLevel(logrus.WarnLevel)
+	fileHook.Level = logrus.WarnLevel
+	//fileHook.CloseConsole()
+	logrus.SetLevel(logrus.InfoLevel)
 	logrus.AddHook(fileHook)
 
 	go do(1 * time.Second)

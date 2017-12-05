@@ -34,7 +34,8 @@ type FileHook struct {
 	Suffix            string // 文件名后缀
 	Formatter         logrus.Formatter
 	writer            *os.File
-	MaxSize           int64 // 文件大小限制
+	MaxSize           int64        // 文件大小限制
+	Level             logrus.Level // 日志等级
 }
 
 func NewFileHook(path string, dirCycle, fileCycle FileCycle) (fileHook *FileHook, err error) {
@@ -85,6 +86,7 @@ func NewFileHook(path string, dirCycle, fileCycle FileCycle) (fileHook *FileHook
 		dirNameFormatter:  string(format[0:dirCycle]),
 		fileNameFormatter: string(format[0:fileCycle]),
 		Formatter:         &logrus.JSONFormatter{},
+		Level:             logrus.InfoLevel,
 	}
 	return
 }
@@ -99,6 +101,9 @@ func (h *FileHook) CloseConsole() error {
 }
 
 func (h *FileHook) Fire(entry *logrus.Entry) error {
+	if entry.Level > h.Level {
+		return nil
+	}
 	pathSeparator := string(os.PathSeparator)
 	path := h.path + pathSeparator + time.Now().Format(h.dirNameFormatter)
 	filename := time.Now().Format(h.fileNameFormatter)
