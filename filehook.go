@@ -61,12 +61,13 @@ func NewFileHook(path string, dirNameCycle, fileNameCycle FileCycle) (fileHook *
 	return
 }
 
-func (h *FileHook) CloseConsole() {
+func (h *FileHook) CloseConsole() error {
 	f, err := os.OpenFile(os.DevNull, os.O_WRONLY, 0644)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	logrus.SetOutput(f)
+	return nil
 }
 
 func (h *FileHook) Fire(entry *logrus.Entry) error {
@@ -99,7 +100,6 @@ func (h *FileHook) Fire(entry *logrus.Entry) error {
 
 	_, err = h.writer.Write(line)
 	if err != nil {
-		panic(err)
 		fmt.Fprintf(os.Stderr, "Unable to write file, %v", err)
 		return err
 	}
