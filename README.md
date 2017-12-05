@@ -14,7 +14,7 @@ import (
 
 func main() {
     fhook,err := filehook.NewFileHook("/log",filehook.MONTH,filehook.HOUR)
-    if err != nil {//
+    if err != nil {
         panic(err)
     }
     fhook.Suffix = ".log"
