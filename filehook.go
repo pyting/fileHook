@@ -37,8 +37,8 @@ type FileHook struct {
 	MaxSize           int64 // 文件大小限制
 }
 
-func NewFileHook(path string, dirNameCycle, fileNameCycle FileCycle) (fileHook *FileHook, err error) {
-	if dirNameCycle >= fileNameCycle {
+func NewFileHook(path string, dirCycle, fileCycle FileCycle) (fileHook *FileHook, err error) {
+	if dirCycle >= fileCycle {
 		err = errors.New("dirNameCycle must less fileNameCycle.")
 		return
 	}
@@ -82,8 +82,8 @@ func NewFileHook(path string, dirNameCycle, fileNameCycle FileCycle) (fileHook *
 	}
 	fileHook = &FileHook{
 		path:              path,
-		dirNameFormatter:  string(format[0:dirNameCycle]),
-		fileNameFormatter: string(format[0:fileNameCycle]),
+		dirNameFormatter:  string(format[0:dirCycle]),
+		fileNameFormatter: string(format[0:fileCycle]),
 		Formatter:         &logrus.JSONFormatter{},
 	}
 	return
