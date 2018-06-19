@@ -45,6 +45,10 @@ func NewFileHook(path string, dirCycle, fileCycle FileCycle) (fileHook *FileHook
 	}
 	format := []rune("20060102150405")
 	path = filepath.Clean(path)
+	err = os.MkdirAll(path,os.ModeDir)
+	if err != nil {
+		return
+	}
 	var fin os.FileInfo
 	fin, err = os.Stat(path)
 	if err != nil {
